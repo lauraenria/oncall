@@ -1,12 +1,14 @@
 package controllers
 
-import models.{Date, User}
+import models.{ Date, User }
 import org.scalatestplus.play._
 import org.scalatestplus.play.guice._
-import play.api.mvc.{EssentialAction, Result}
-import play.api.test._
+import play.api.mvc.Result
 import play.api.test.Helpers._
+import play.api.test._
 
+import java.text.SimpleDateFormat
+import java.util
 import java.util.Calendar
 import scala.concurrent.Future
 
@@ -22,7 +24,6 @@ class DateControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
 
     val laura = User("Laura Enria")
 
-
     val controller = new DateController(stubControllerComponents())
 
     "if we select to yesterday we get that day" in {
@@ -35,13 +36,14 @@ class DateControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
     }
 
     "If don't pass a specific date (empty) - return today" in {
-      val today = Date("19-2-2021")
+      val format = new SimpleDateFormat("d-M-y")
+      val today: util.Date = Calendar.getInstance().getTime
+      val formattedDate: String = format.format(today)
 
-      val requestNoParameter: Future[Result] = controller.info(date = "").apply(FakeRequest(GET, s"/date/info/"))
+      val requestNoParameter: Future[Result] = controller.info().apply(FakeRequest(GET, s"/date/info"))
       status(requestNoParameter) mustBe OK
       contentType(requestNoParameter) mustBe Some("text/plain")
-      contentAsString(requestNoParameter) must include(s"${laura.name}, ${today.date}")
-
+      contentAsString(requestNoParameter) must include(s"${laura.name}, $formattedDate")
     }
 
     "if we select to tomorrow we get that day" in {
